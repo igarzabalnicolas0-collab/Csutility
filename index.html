@@ -12,213 +12,223 @@
 <title>CS2 UTIL</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0c; --panel: #111116; --card: #18181f; --border: #25252f;
-    --accent: #f5a623; --smoke: #7eb8d4; --flash: #f5e642; --molotov: #e84040; --he: #4de88a;
-    --text: #e8e8f0; --muted: #666680;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html { height: 100%; }
-  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100%; overflow: hidden; display: flex; flex-direction: column; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .logo { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: 3px; color: var(--accent); }
-  .logo span { color: var(--text); }
-  .back-btn { display: none; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer; }
-  .back-btn.visible { display: flex; }
-  .breadcrumb-header { font-size: 12px; color: var(--muted); font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; max-width: 55%; text-align: right; }
-  .breadcrumb-header span { color: var(--accent); }
-  .screen { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .screen.active { display: block; }
-
-  /* MAPS */
-  .section-label { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
-  .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .map-card { border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; aspect-ratio: 16/9; display: flex; align-items: flex-end; border: 1px solid var(--border); transition: transform 0.12s; }
-  .map-card:active { transform: scale(0.96); }
-  .map-emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 52px; opacity: 0.18; }
-  .map-label { position: relative; z-index: 1; width: 100%; padding: 10px 12px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); }
-  .map-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
-  .map-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
-  .map-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #000; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 10px; padding: 3px 8px; border-radius: 99px; }
-  .map-badge.soon { background: var(--border); color: var(--muted); }
-
-  /* TYPES */
-  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .type-card { background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 22px 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.12s; }
-  .type-card:active { transform: scale(0.96); }
-  .type-card.disabled { opacity: 0.35; pointer-events: none; }
-  .type-icon { font-size: 34px; }
-  .type-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: 1px; }
-  .type-count { font-size: 11px; color: var(--muted); }
-  .type-card.smoke { border-color: var(--smoke); } .type-card.smoke .type-name { color: var(--smoke); }
-  .type-card.flash { border-color: var(--flash); } .type-card.flash .type-name { color: var(--flash); }
-  .type-card.molotov { border-color: var(--molotov); } .type-card.molotov .type-name { color: var(--molotov); }
-  .type-card.he { border-color: var(--he); } .type-card.he .type-name { color: var(--he); }
-
-  /* LIST */
-  .nade-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; transition: transform 0.12s, border-color 0.12s; }
-  .nade-item:active { transform: scale(0.98); border-color: var(--accent); }
-  .nade-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .nade-dot.smoke { background: var(--smoke); }
-  .nade-info { flex: 1; min-width: 0; }
-  .nade-title { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 17px; }
-  .nade-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .diff { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 500; margin-top: 5px; }
-  .diff-easy { background: #0d3320; color: var(--he); }
-  .diff-medium { background: #332d00; color: var(--flash); }
-  .diff-hard { background: #330d0d; color: var(--molotov); }
-  .nade-arrow { color: var(--muted); font-size: 20px; flex-shrink: 0; }
-
-  /* LINEUP */
-  .lineup-img-wrap { width: 100%; background: #000; }
-  .lineup-img-wrap img { width: 100%; display: block; }
-  .lineup-info { padding: 16px; padding-bottom: 30px; }
-  .lineup-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 22px; margin-bottom: 8px; }
-  .lineup-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-  .tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
-  .tag-map { background: #1a1a2e; color: #8888ff; }
-  .tag-smoke { background: #0d1f2e; color: var(--smoke); font-family: 'Rajdhani', sans-serif; font-weight: 600; }
-  .tag-throw { background: #1a2e0a; color: var(--he); font-family: 'Rajdhani', sans-serif; font-weight: 600; }
-  .tip-box { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 14px 16px; font-size: 13px; color: #aaa; line-height: 1.65; }
-  .tip-box strong { color: var(--accent); display: block; margin-bottom: 5px; font-family: 'Rajdhani', sans-serif; font-size: 13px; letter-spacing: 1px; }
-
-  @keyframes slideIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
-  .screen.active { animation: slideIn 0.18s ease; }
+:root{--bg:#0a0a0c;--panel:#111116;--card:#18181f;--border:#25252f;--accent:#f5a623;--smoke:#7eb8d4;--text:#e8e8f0;--muted:#666680;--he:#4de88a;--flash:#f5e642;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;height:100%;overflow:hidden;display:flex;flex-direction:column;}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;}
+.logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;letter-spacing:3px;color:var(--accent);}
+.logo span{color:var(--text);}
+.back-btn{display:none;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--text);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;cursor:pointer;}
+.back-btn.visible{display:flex;}
+.bread{font-size:12px;color:var(--muted);font-family:'Rajdhani',sans-serif;letter-spacing:1px;max-width:55%;text-align:right;}
+.bread span{color:var(--accent);}
+.screen{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.screen.active{display:block;}
+.pad{padding:16px;}
+.slabel{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.map-card{border-radius:14px;overflow:hidden;cursor:pointer;position:relative;aspect-ratio:16/9;display:flex;align-items:flex-end;border:1px solid var(--border);transition:transform .12s;}
+.map-card:active{transform:scale(.96);}
+.map-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:.18;}
+.map-label{position:relative;z-index:1;width:100%;padding:10px 12px;background:linear-gradient(transparent,rgba(0,0,0,.9));}
+.map-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;}
+.map-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+.badge{position:absolute;top:8px;right:8px;background:var(--accent);color:#000;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10px;padding:3px 8px;border-radius:99px;}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.type-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:22px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .12s;}
+.type-card:active{transform:scale(.96);}
+.type-card.disabled{opacity:.35;pointer-events:none;}
+.type-icon{font-size:34px;}
+.type-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;letter-spacing:1px;}
+.type-count{font-size:11px;color:var(--muted);}
+.type-card.smoke{border-color:var(--smoke);}.type-card.smoke .type-name{color:var(--smoke);}
+.nade-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:transform .12s,border-color .12s;}
+.nade-item:active{transform:scale(.98);border-color:var(--accent);}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--smoke);}
+.ni{flex:1;min-width:0;}
+.nt{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:17px;}
+.nd{font-size:12px;color:var(--muted);margin-top:2px;}
+.diff{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;margin-top:5px;}
+.diff-easy{background:#0d3320;color:var(--he);}
+.diff-medium{background:#332d00;color:var(--flash);}
+.diff-hard{background:#330d0d;color:#e84040;}
+.narrow{color:var(--muted);font-size:20px;flex-shrink:0;}
+.lineup-img-wrap{width:100%;background:#000;}
+.lineup-img-wrap img{width:100%;display:block;}
+.linfo{padding:16px 16px 30px;}
+.ltitle{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;margin-bottom:8px;}
+.ltags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.tag{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:500;}
+.tag-map{background:#1a1a2e;color:#8888ff;}
+.tag-smoke{background:#0d1f2e;color:var(--smoke);font-family:'Rajdhani',sans-serif;font-weight:600;}
+.tag-throw{background:#1a2e0a;color:var(--he);font-family:'Rajdhani',sans-serif;font-weight:600;}
+.tip-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;font-size:13px;color:#aaa;line-height:1.65;}
+.tip-box strong{color:var(--accent);display:block;margin-bottom:5px;font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:1px;}
+@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+.screen.active{animation:slideIn .18s ease;}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo" id="header-logo">CS2<span>UTIL</span></div>
-  <div class="breadcrumb-header" id="header-bread" style="display:none"></div>
-  <button class="back-btn" id="back-btn" onclick="goBack()">← VOLVER</button>
+  <div class="logo" id="hlogo">CS2<span>UTIL</span></div>
+  <div class="bread" id="hbread" style="display:none"></div>
+  <button class="back-btn" id="backbtn" onclick="goBack()">← VOLVER</button>
 </header>
 
-<div class="screen active" id="screen-maps">
-  <div style="padding:16px">
-    <div class="section-label">Seleccioná el mapa</div>
-    <div class="map-grid">
-      <div class="map-card" onclick="selectMap('mirage')" style="background:linear-gradient(135deg,#1a1208,#2e2008)">
-        <div class="map-badge">3 lineups</div>
-        <div class="map-emoji">🏛️</div>
-        <div class="map-label"><div class="map-name">MIRAGE</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
-      </div>
-      <div class="map-card" style="background:linear-gradient(135deg,#080f1a,#0a1f14);opacity:0.4;pointer-events:none">
-        <div class="map-badge soon">PRÓXIMO</div>
-        <div class="map-emoji">☢️</div>
-        <div class="map-label"><div class="map-name">NUKE</div><div class="map-sub">EN CONSTRUCCIÓN</div></div>
-      </div>
-      <div class="map-card" style="background:linear-gradient(135deg,#1a0808,#2a1008);opacity:0.4;pointer-events:none">
-        <div class="map-badge soon">PRÓXIMO</div>
-        <div class="map-emoji">🔥</div>
-        <div class="map-label"><div class="map-name">INFERNO</div><div class="map-sub">EN CONSTRUCCIÓN</div></div>
-      </div>
-      <div class="map-card" style="background:linear-gradient(135deg,#1a1508,#2a200a);opacity:0.4;pointer-events:none">
-        <div class="map-badge soon">PRÓXIMO</div>
-        <div class="map-emoji">🏜️</div>
-        <div class="map-label"><div class="map-name">DUST 2</div><div class="map-sub">EN CONSTRUCCIÓN</div></div>
-      </div>
+<div class="screen active" id="screen-maps"><div class="pad">
+  <div class="slabel">Seleccioná el mapa</div>
+  <div class="map-grid">
+    <div class="map-card" onclick="selectMap('mirage')" style="background:linear-gradient(135deg,#1a1208,#2e2008)">
+      <div class="badge">4</div><div class="map-emoji">🏛️</div>
+      <div class="map-label"><div class="map-name">MIRAGE</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('ancient')" style="background:linear-gradient(135deg,#0a1a0a,#102010)">
+      <div class="badge">3</div><div class="map-emoji">🌿</div>
+      <div class="map-label"><div class="map-name">ANCIENT</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('nuke')" style="background:linear-gradient(135deg,#080f1a,#0a1f14)">
+      <div class="badge">2</div><div class="map-emoji">☢️</div>
+      <div class="map-label"><div class="map-name">NUKE</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('anubis')" style="background:linear-gradient(135deg,#1a1508,#2e2508)">
+      <div class="badge">3</div><div class="map-emoji">🏺</div>
+      <div class="map-label"><div class="map-name">ANUBIS</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('dust2')" style="background:linear-gradient(135deg,#1a1508,#2a200a)">
+      <div class="badge">6</div><div class="map-emoji">🏜️</div>
+      <div class="map-label"><div class="map-name">DUST 2</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('inferno')" style="background:linear-gradient(135deg,#1a0808,#2a1008)">
+      <div class="badge">3</div><div class="map-emoji">🔥</div>
+      <div class="map-label"><div class="map-name">INFERNO</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('overpass')" style="background:linear-gradient(135deg,#0a0f1a,#101a2a)">
+      <div class="badge">3</div><div class="map-emoji">🌉</div>
+      <div class="map-label"><div class="map-name">OVERPASS</div><div class="map-sub">HUMOS DISPONIBLES</div></div>
     </div>
   </div>
-</div>
+</div></div>
 
-<div class="screen" id="screen-types">
-  <div style="padding:16px">
-    <div class="section-label" id="types-label">Tipo de granada</div>
-    <div class="type-grid">
-      <div class="type-card smoke" onclick="selectType('smoke')">
-        <div class="type-icon">💨</div><div class="type-name">HUMO</div><div class="type-count" id="cnt-smoke"></div>
-      </div>
-      <div class="type-card flash disabled"><div class="type-icon">⚡</div><div class="type-name">FLASH</div><div class="type-count">próximamente</div></div>
-      <div class="type-card molotov disabled"><div class="type-icon">🔥</div><div class="type-name">MOLOTOV</div><div class="type-count">próximamente</div></div>
-      <div class="type-card he disabled"><div class="type-icon">💣</div><div class="type-name">HE</div><div class="type-count">próximamente</div></div>
+<div class="screen" id="screen-types"><div class="pad">
+  <div class="slabel" id="types-label">Tipo de granada</div>
+  <div class="type-grid">
+    <div class="type-card smoke" onclick="selectType('smoke')">
+      <div class="type-icon">💨</div><div class="type-name">HUMO</div><div class="type-count" id="cnt-smoke"></div>
     </div>
+    <div class="type-card disabled" style="border-color:#f5e642"><div class="type-icon">⚡</div><div class="type-name" style="color:#f5e642">FLASH</div><div class="type-count">próximamente</div></div>
+    <div class="type-card disabled" style="border-color:#e84040"><div class="type-icon">🔥</div><div class="type-name" style="color:#e84040">MOLOTOV</div><div class="type-count">próximamente</div></div>
+    <div class="type-card disabled" style="border-color:#4de88a"><div class="type-icon">💣</div><div class="type-name" style="color:#4de88a">HE</div><div class="type-count">próximamente</div></div>
   </div>
-</div>
+</div></div>
 
-<div class="screen" id="screen-list">
-  <div id="nade-list" style="padding:12px 16px"></div>
-</div>
+<div class="screen" id="screen-list"><div id="nade-list" class="pad"></div></div>
 
 <div class="screen" id="screen-lineup">
   <div class="lineup-img-wrap"><img id="lineup-img" src="" alt="Lineup"></div>
-  <div class="lineup-info">
-    <div class="lineup-title" id="lineup-title"></div>
-    <div class="lineup-tags" id="lineup-tags"></div>
+  <div class="linfo">
+    <div class="ltitle" id="lineup-title"></div>
+    <div class="ltags" id="lineup-tags"></div>
     <div class="tip-box"><strong>💡 CÓMO EJECUTAR</strong><span id="lineup-tip"></span></div>
   </div>
 </div>
 
 <script>
-const DATA = {
-  mirage: {
-    smoke: [
-      { title:"Window Smoke (Mid)", desc:"Bloquea al AWPer de Window desde T spawn", img:"img_window.jpg", throw:"Hold D + Jump Throw", diff:"medium", tip:"Parate al lado del tacho en T spawn pegado a la pared. Apuntá 3/4 del borde superior de la puerta. Mantené D presionado 1 segundo y ejecutá Jump Throw." },
-      { title:"Bench Smoke", desc:"Humo al banco desde Palace Alley", img:"img_bench.jpg", throw:"Aim 1/4 top + Jump Throw", diff:"medium", tip:"Posicionarte en Palace Alley debajo del techo. Apuntá 1/4 del borde superior de esa parte del edificio. Jump Throw normal." },
-      { title:"Stairs Smoke", desc:"Humo a escaleras A desde Palace Alley", img:"img_stairs.jpg", throw:"Middle Click + Jump Throw", diff:"medium", tip:"Mismo spot que Bench en Palace Alley. Apuntá a la marca oscura en la pared de ladrillos. Middle click y Jump Throw al mismo tiempo." },
-    ]
-  }
+const DATA={
+  mirage:{smoke:[
+    {title:"Window Smoke (Mid)",desc:"Bloquea al AWPer de Window",img:"img_window.jpg",throw:"Hold D + JT",diff:"medium",tip:"Parate al lado del tacho en T spawn. Apuntá 3/4 del borde superior de la puerta. Mantené D 1 segundo y Jump Throw."},
+    {title:"Bench Smoke",desc:"Humo al banco desde Palace Alley",img:"img_bench.jpg",throw:"Aim 1/4 top + JT",diff:"medium",tip:"Palace Alley debajo del techo. Apuntá 1/4 del borde superior del edificio. Jump Throw."},
+    {title:"Stairs Smoke",desc:"Humo a escaleras A desde Palace Alley",img:"img_stairs.jpg",throw:"Middle Click + JT",diff:"medium",tip:"Mismo spot que Bench. Apuntá a la marca oscura en la pared de ladrillos. Middle click + Jump Throw."},
+    {title:"Ticket Smoke",desc:"Cubre el ticket en A site",img:"mirage_ticket.jpg",throw:"Left end of pole + JT",diff:"medium",tip:"Spot en Palace Alley. Apuntá al extremo izquierdo del poste visible. Jump Throw."},
+  ]},
+  ancient:{smoke:[
+    {title:"Mid Smokes (Donut + Heaven + Window)",desc:"3 humos desde 1 posición",img:"ancient_mid_smokes.jpg",throw:"Jump Throw",diff:"medium",tip:"T Start cerca del río. Donut: hojas tocan el borde + JT. Heaven: esquina del edificio + JT. Window: ladrillo específico + W+JT."},
+    {title:"A Smokes pos.2 (CT + Donut)",desc:"Humos A site desde Outside",img:"ancient_a_smokes.jpg",throw:"Jump Throw",diff:"medium",tip:"Outside frente a la escalera. CT: donde techo cruza con edificio + JT. Donut: parte superior de la X + JT."},
+    {title:"B Smokes (Short + Long + Cubby molo)",desc:"Control B desde Ruins",img:"ancient_b_smokes.jpg",throw:"W+JT / JT",diff:"medium",tip:"Ruins. Short: medio de la roca curva + JT. Long: izquierda de la X + JT. Cubby molo: derecha de los 4 cuadrados + W+JT."},
+  ]},
+  nuke:{smoke:[
+    {title:"Secret Cross Smokes (1st + 2nd)",desc:"Cruzar por Secret",img:"nuke_secret_smokes.jpg",throw:"Jump Throw",diff:"medium",tip:"Detrás del camión rojo. 1er humo: entre ventanas + JT. 2do humo: 2do clip del cable + JT. Tirá en orden."},
+    {title:"Garage Smoke desde T spawn",desc:"Cubre el garage para cruzar",img:"nuke_garage_smoke.jpg",throw:"Jump Throw",diff:"easy",tip:"Outside cerca de la reja de T spawn. Apuntá a la parte cuadrada del edificio + JT."},
+  ]},
+  anubis:{smoke:[
+    {title:"Mid + Cave Smoke desde T spawn",desc:"2 humos en 1 posición",img:"anubis_mid_cave.jpg",throw:"Jump Throw",diff:"easy",tip:"T Start frente al portón. Cave: pieza de madera + JT. Mid: esquina del arco + JT."},
+    {title:"A Site Heaven + Broken Wall molo",desc:"Humos para ejecutar A",img:"anubis_a_site.jpg",throw:"Jump Throw",diff:"medium",tip:"Canal frente al agua. Heaven: fondo de la grieta + JT. Broken wall molo: grieta inferior + JT."},
+    {title:"B Site (CT + Palace + Left + Right + R pillar)",desc:"5 lineups desde Outside Long",img:"anubis_b_site.jpg",throw:"JT / Left Click",diff:"medium",tip:"Outside Long mirando al edificio de columnas. CT: marca marrón + left click. Palace: línea + left click. Left B: 3er-4to crest + JT. Right B: 3er crest + JT."},
+  ]},
+  dust2:{smoke:[
+    {title:"Xbox Smoke desde T spawn",desc:"Cubre Xbox para cruzar Mid",img:"dust2_xbox_smoke.jpg",throw:"Jump Throw",diff:"easy",tip:"T Start pegado a la pared derecha. Apuntá a la parte superior de la marca en el edificio. Jump Throw."},
+    {title:"Mid Door Smoke desde Suicide",desc:"Tapa la puerta de Mid",img:"dust2_mid_door.jpg",throw:"Left Click",diff:"easy",tip:"Top of Mid / Suicide. Apuntá al remache inferior de la puerta. Left click throw, sin saltar."},
+    {title:"CT Giant Smoke desde Xbox",desc:"Humo gigante que cubre CT",img:"dust2_ct_giant.jpg",throw:"Crouch + JT",diff:"medium",tip:"Middle agachado detrás de Xbox. Apuntá a la derecha del remache hasta el borde de la madera. JT."},
+    {title:"1st Short Smoke",desc:"Primer humo para ejecutar Short",img:"dust2_short_1.jpg",throw:"Crouch + Left Click",diff:"easy",tip:"Short Stairs agachado. Apuntá 1/4 del borde superior de la ventana. Left click agachado."},
+    {title:"2nd Short Smoke",desc:"Segundo humo para ejecutar Short",img:"dust2_short_2.jpg",throw:"Stand + Middle Click",diff:"easy",tip:"Mismo spot pero de pie. Apuntá a la barra de metal. Middle click de pie."},
+    {title:"B Door + Window Smoke",desc:"Tapa puerta y ventana de B",img:"dust2_b_door_window.jpg",throw:"JT / W+JT",diff:"easy",tip:"Outside Tunnel en el ladrillo cuadrado del piso. Círculo difuminado: JT para window, W+JT para door."},
+  ]},
+  inferno:{smoke:[
+    {title:"Top Mid Pressure Smoke",desc:"Presión por Mid desde T spawn",img:"inferno_top_mid.jpg",throw:"Jump Throw",diff:"easy",tip:"T Start en la esquina. Apuntá a la parte superior de la ventana visible. Jump Throw."},
+    {title:"Coffins + CT Boost (sin JT)",desc:"Dos humos A desde Banana",img:"inferno_coffins_ct.jpg",throw:"Left Click Throw",diff:"easy",tip:"Banana alineado con el lado izquierdo de la caja. Coffins: altura del techo izquierdo + left click. CT Boost: esquina del edificio + left click."},
+    {title:"Moto Smoke (JT)",desc:"Humo a la moto desde Mid",img:"inferno_moto.jpg",throw:"Jump Throw",diff:"easy",tip:"Middle al lado de la pared roja. Apuntá al fondo del 2do ladrillo. Jump Throw."},
+  ]},
+  overpass:{smoke:[
+    {title:"Heaven Smoke desde T spawn",desc:"Cubre Heaven al salir",img:"overpass_heaven.jpg",throw:"Run + JT al cruzar sombra",diff:"medium",tip:"Alley al medio de esa sección. Apuntá a la esquina del tablón de madera. Corré y tirá JT al cruzar la sombra en el piso."},
+    {title:"B Nades desde Outside Con",desc:"Heaven + B site flash",img:"overpass_b_nades.jpg",throw:"JT / Left Click",diff:"medium",tip:"Water al lado de la puerta verde. Heaven: esquina inferior de la madera + JT. B site flash: perno grande + left click throw."},
+    {title:"A Smokes desde Lower Park (Bank + CT)",desc:"2 humos A desde 1 spot",img:"overpass_a_smokes.jpg",throw:"Jump Throw",diff:"medium",tip:"Lower Park frente al kiosco. Bank: extremo del tirante de madera + JT. CT: base del poste de metal + JT."},
+  ]},
 };
 
-const MAP_NAMES = { mirage:'Mirage' };
-const TYPE_NAMES = { smoke:'💨 Humo' };
-const DIFF_LABEL = { easy:'● Fácil', medium:'● Medio', hard:'● Difícil' };
-let currentMap = null, currentType = null;
-const stack = [];
+const MAP_NAMES={mirage:'Mirage',ancient:'Ancient',nuke:'Nuke',anubis:'Anubis',dust2:'Dust 2',inferno:'Inferno',overpass:'Overpass'};
+const DIFF={easy:'● Fácil',medium:'● Medio',hard:'● Difícil'};
+let cMap=null,cType=null;
+const stack=[];
 
-function setHeader(showBack, bread='') {
-  document.getElementById('back-btn').classList.toggle('visible', showBack);
-  const logo = document.getElementById('header-logo');
-  const bc = document.getElementById('header-bread');
-  if (bread) { logo.style.display='none'; bc.style.display='block'; bc.innerHTML=bread; }
-  else { logo.style.display='block'; bc.style.display='none'; }
+function setH(back,bread=''){
+  document.getElementById('backbtn').classList.toggle('visible',back);
+  const l=document.getElementById('hlogo'),b=document.getElementById('hbread');
+  if(bread){l.style.display='none';b.style.display='block';b.innerHTML=bread;}
+  else{l.style.display='block';b.style.display='none';}
 }
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
-  document.getElementById('screen-'+id).scrollTop = 0;
+function showS(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+id);
+  el.classList.add('active');el.scrollTop=0;
 }
-function goBack() {
-  const prev = stack.pop();
-  if (prev==='maps') { setHeader(false); showScreen('maps'); }
-  else if (prev==='types') { setHeader(true, MAP_NAMES[currentMap]); showScreen('types'); }
-  else if (prev==='list') { setHeader(true, `${MAP_NAMES[currentMap]} <span>› ${TYPE_NAMES[currentType]}</span>`); showScreen('list'); }
+function goBack(){
+  const p=stack.pop();
+  if(p==='maps'){setH(false);showS('maps');}
+  else if(p==='types'){setH(true,MAP_NAMES[cMap]);showS('types');}
+  else if(p==='list'){setH(true,`${MAP_NAMES[cMap]} <span>› 💨 Humo</span>`);showS('list');}
 }
-function selectMap(map) {
-  stack.push('maps'); currentMap = map;
-  document.getElementById('types-label').textContent = MAP_NAMES[map].toUpperCase()+' — Tipo de granada';
-  document.getElementById('cnt-smoke').textContent = (DATA[map]?.smoke?.length||0)+' lineups';
-  setHeader(true, MAP_NAMES[map]); showScreen('types');
+function selectMap(map){
+  stack.push('maps');cMap=map;
+  document.getElementById('types-label').textContent=MAP_NAMES[map].toUpperCase()+' — Tipo de granada';
+  document.getElementById('cnt-smoke').textContent=(DATA[map]?.smoke?.length||0)+' lineups';
+  setH(true,MAP_NAMES[map]);showS('types');
 }
-function selectType(type) {
-  stack.push('types'); currentType = type;
-  const nades = DATA[currentMap]?.[type]||[];
-  document.getElementById('nade-list').innerHTML = nades.map((n,i) => `
+function selectType(type){
+  stack.push('types');cType=type;
+  const nades=DATA[cMap]?.[type]||[];
+  document.getElementById('nade-list').innerHTML=nades.map((n,i)=>`
     <div class="nade-item" onclick="openLineup(${i})">
-      <div class="nade-dot ${type}"></div>
-      <div class="nade-info">
-        <div class="nade-title">${n.title}</div>
-        <div class="nade-desc">${n.desc}</div>
-        <span class="diff diff-${n.diff}">${DIFF_LABEL[n.diff]}</span>
-      </div>
-      <div class="nade-arrow">›</div>
+      <div class="dot"></div>
+      <div class="ni"><div class="nt">${n.title}</div><div class="nd">${n.desc}</div>
+      <span class="diff diff-${n.diff}">${DIFF[n.diff]}</span></div>
+      <div class="narrow">›</div>
     </div>`).join('');
-  setHeader(true, `${MAP_NAMES[currentMap]} <span>› ${TYPE_NAMES[type]}</span>`); showScreen('list');
+  setH(true,`${MAP_NAMES[cMap]} <span>› 💨 Humo</span>`);showS('list');
 }
-function openLineup(i) {
+function openLineup(i){
   stack.push('list');
-  const n = DATA[currentMap][currentType][i];
-  document.getElementById('lineup-img').src = n.img;
-  document.getElementById('lineup-title').textContent = n.title;
-  document.getElementById('lineup-tags').innerHTML = `
-    <span class="tag tag-map">${MAP_NAMES[currentMap]}</span>
-    <span class="tag tag-smoke">${TYPE_NAMES[currentType]}</span>
+  const n=DATA[cMap][cType][i];
+  document.getElementById('lineup-img').src=n.img;
+  document.getElementById('lineup-title').textContent=n.title;
+  document.getElementById('lineup-tags').innerHTML=`
+    <span class="tag tag-map">${MAP_NAMES[cMap]}</span>
+    <span class="tag tag-smoke">💨 Humo</span>
     <span class="tag tag-throw">🎯 ${n.throw}</span>
-    <span class="diff diff-${n.diff}">${DIFF_LABEL[n.diff]}</span>`;
-  document.getElementById('lineup-tip').textContent = n.tip;
-  setHeader(true, `${MAP_NAMES[currentMap]} <span>› ${n.title}</span>`); showScreen('lineup');
+    <span class="diff diff-${n.diff}">${DIFF[n.diff]}</span>`;
+  document.getElementById('lineup-tip').textContent=n.tip;
+  setH(true,`${MAP_NAMES[cMap]} <span>› ${n.title}</span>`);showS('lineup');
 }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
