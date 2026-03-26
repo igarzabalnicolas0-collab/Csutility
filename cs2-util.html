@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CS2 UTIL</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --panel: #111116;
+    --card: #18181f;
+    --border: #25252f;
+    --accent: #f5a623;
+    --smoke: #7eb8d4;
+    --flash: #f5e642;
+    --molotov: #e84040;
+    --he: #4de88a;
+    --text: #e8e8f0;
+    --muted: #666680;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
+
+  /* HEADER */
+  header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
+  .logo { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: 2px; color: var(--accent); }
+  .logo span { color: var(--text); }
+  .back-btn { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; letter-spacing: 1px; }
+
+  /* MAIN LAYOUT */
+  .screen { display: none; flex-direction: column; height: calc(100vh - 53px); overflow: hidden; }
+  .screen.active { display: flex; }
+
+  /* MAP SELECT */
+  #screen-maps { padding: 16px; gap: 12px; overflow-y: auto; }
+  .section-label { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+  .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .map-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.15s; position: relative; aspect-ratio: 16/9; display: flex; align-items: flex-end; }
+  .map-card:active { transform: scale(0.97); border-color: var(--accent); }
+  .map-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 60px; opacity: 0.15; }
+  .map-label { position: relative; z-index: 1; width: 100%; padding: 10px 12px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); }
+  .map-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+  .map-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+  /* NADE TYPE SELECT */
+  #screen-types { padding: 16px; gap: 12px; overflow-y: auto; }
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 14px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .type-card:active { transform: scale(0.97); }
+  .type-icon { font-size: 32px; }
+  .type-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+  .type-count { font-size: 11px; color: var(--muted); }
+  .type-card.smoke { border-color: var(--smoke); }
+  .type-card.smoke .type-name { color: var(--smoke); }
+  .type-card.flash { border-color: var(--flash); }
+  .type-card.flash .type-name { color: var(--flash); }
+  .type-card.molotov { border-color: var(--molotov); }
+  .type-card.molotov .type-name { color: var(--molotov); }
+  .type-card.he { border-color: var(--he); }
+  .type-card.he .type-name { color: var(--he); }
+
+  /* NADE LIST */
+  #screen-list { padding: 0; overflow-y: auto; }
+  .nade-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .nade-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 12px; }
+  .nade-item:active { transform: scale(0.98); }
+  .nade-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .nade-dot.smoke { background: var(--smoke); }
+  .nade-dot.flash { background: var(--flash); }
+  .nade-dot.molotov { background: var(--molotov); }
+  .nade-dot.he { background: var(--he); }
+  .nade-info { flex: 1; }
+  .nade-title { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.5px; }
+  .nade-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .nade-arrow { color: var(--muted); font-size: 18px; }
+  .difficulty { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 500; margin-top: 4px; }
+  .diff-easy { background: #0d3320; color: var(--he); }
+  .diff-medium { background: #332d00; color: var(--flash); }
+  .diff-hard { background: #330d0d; color: var(--molotov); }
+
+  /* VIDEO SCREEN */
+  #screen-video { overflow-y: auto; }
+  .video-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+  .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+  .video-info { padding: 16px; }
+  .video-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .video-tags { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+  .tag-map { background: #1a1a2e; color: #8888ff; }
+  .tag-type { font-family: 'Rajdhani', sans-serif; font-weight: 600; }
+  .tag-type.smoke { background: #0d1f2e; color: var(--smoke); }
+  .tag-type.flash { background: #2e2a00; color: var(--flash); }
+  .tag-type.molotov { background: #2e0d0d; color: var(--molotov); }
+  .tag-type.he { background: #0d2e1a; color: var(--he); }
+  .tip-box { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #aaa; line-height: 1.6; }
+  .tip-box strong { color: var(--accent); display: block; margin-bottom: 4px; font-family: 'Rajdhani', sans-serif; font-size: 14px; letter-spacing: 1px; }
+
+  /* BREADCRUMB */
+  .breadcrumb { padding: 10px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; background: var(--panel); }
+  .breadcrumb span { color: var(--text); }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  .screen.active { animation: slideIn 0.2s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CS2<span>UTIL</span></div>
+  <button class="back-btn" id="back-btn" onclick="goBack()">← VOLVER</button>
+</header>
+
+<!-- SCREEN 1: MAPAS -->
+<div class="screen active" id="screen-maps">
+  <div class="section-label">Seleccioná el mapa</div>
+  <div class="map-grid">
+    <div class="map-card" onclick="selectMap('mirage')" style="background: linear-gradient(135deg, #1a1208, #2a1f0a)">
+      <div class="map-bg">🏛️</div>
+      <div class="map-label"><div class="map-name">MIRAGE</div><div class="map-sub">MID • A SITE • B SITE</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('nuke')" style="background: linear-gradient(135deg, #080f1a, #0a1a10)">
+      <div class="map-bg">☢️</div>
+      <div class="map-label"><div class="map-name">NUKE</div><div class="map-sub">UPPER • LOWER • OUTSIDE</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('inferno')" style="background: linear-gradient(135deg, #1a0808, #2a1008)">
+      <div class="map-bg">🔥</div>
+      <div class="map-label"><div class="map-name">INFERNO</div><div class="map-sub">BANANA • A SITE • MID</div></div>
+    </div>
+    <div class="map-card" onclick="selectMap('dust2')" style="background: linear-gradient(135deg, #1a1508, #2a200a)">
+      <div class="map-bg">🏜️</div>
+      <div class="map-label"><div class="map-name">DUST 2</div><div class="map-sub">LONG • MID • B SITE</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: TIPO DE GRANADA -->
+<div class="screen" id="screen-types">
+  <div class="section-label" id="types-label">Tipo de granada</div>
+  <div class="type-grid">
+    <div class="type-card smoke" onclick="selectType('smoke')">
+      <div class="type-icon">💨</div>
+      <div class="type-name">HUMO</div>
+      <div class="type-count" id="count-smoke">— lineups</div>
+    </div>
+    <div class="type-card flash" onclick="selectType('flash')">
+      <div class="type-icon">⚡</div>
+      <div class="type-name">FLASH</div>
+      <div class="type-count" id="count-flash">— lineups</div>
+    </div>
+    <div class="type-card molotov" onclick="selectType('molotov')">
+      <div class="type-icon">🔥</div>
+      <div class="type-name">MOLOTOV</div>
+      <div class="type-count" id="count-molotov">— lineups</div>
+    </div>
+    <div class="type-card he" onclick="selectType('he')">
+      <div class="type-icon">💣</div>
+      <div class="type-name">HE</div>
+      <div class="type-count" id="count-he">— lineups</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3: LISTA -->
+<div class="screen" id="screen-list">
+  <div class="breadcrumb" id="breadcrumb-list"></div>
+  <div class="nade-list" id="nade-list"></div>
+</div>
+
+<!-- SCREEN 4: VIDEO -->
+<div class="screen" id="screen-video">
+  <div class="video-container">
+    <iframe id="yt-player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div class="video-info">
+    <div class="video-title" id="vid-title"></div>
+    <div class="video-tags" id="vid-tags"></div>
+    <div class="tip-box">
+      <strong>💡 CÓMO EJECUTAR</strong>
+      <span id="vid-tip"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+// YouTube IDs son videos reales de canales reconocidos de CS2 lineups
+const DATA = {
+  mirage: {
+    smoke: [
+      { title: "Ventana Mid (Window)", desc: "Bloquea al AWPer de Mid desde T spawn", vid: "NI-bsOgkPFI", diff: "medium", tip: "Parate a la izquierda del tacho en T spawn, apuntá al marco derecho de la ventana, mantené D y hacé jump throw." },
+      { title: "Escaleras A (Stairs)", desc: "Esencial para ejecutar A site", vid: "S3EaKgXmMeM", diff: "easy", tip: "Subí a los pilares cerca de T base, apuntá al punto oscuro entre los ladrillos, ejecutá left-right click jump throw." },
+      { title: "CT Spawn A", desc: "Saca al CT del box y el ticket", vid: "Q5ATPQpIVTI", diff: "hard", tip: "Parate en la esquina entre T spawn y los pilares, apuntá al extremo de la viga del edificio más alto, jump throw." },
+      { title: "Jungle A", desc: "Combo con Stairs para ejecutar A", vid: "jMiKQMCfEhk", diff: "medium", tip: "Subí al andamio camino a A site, caminá hasta el final de la plataforma elevada, mirá a la izquierda para posicionarte." },
+      { title: "Market Window B", desc: "Bloquea rotaciones CT en B", vid: "yCqCXWfmWMM", diff: "easy", tip: "Metete en la esquina a la derecha al salir de TV room, apuntá a la torre, jump throw." },
+      { title: "Market Door B", desc: "Combo con Market Window para rush B", vid: "yCqCXWfmWMM", diff: "easy", tip: "Desde el mismo spot que Market Window, apuntá a la ventana de la torre, jump throw." },
+      { title: "Top Mid", desc: "Humo básico esencial de Top Mid", vid: "wLxOlQqcaXc", diff: "easy", tip: "Subite al tacho en T spawn, apuntá a la punta derecha de la antena derecha, left click throw." },
+    ],
+    flash: [
+      { title: "Flash Ventana Mid", desc: "Ciega al AWPer de Window perfectamente", vid: "YNSqS5mtoOM", diff: "medium", tip: "Tirala contra la pared de mid para que reviente justo sobre la ventana. Avisá al equipo con 'flash window'." },
+      { title: "Pop Flash A Site", desc: "Flash perfecta al entrar por Ramp", vid: "ahKpQaHxfz8", diff: "hard", tip: "Tirá la flash contra la pared de la esquina de Ramp para que reviente sobre el site sin cegarte." },
+      { title: "Flash B Apps", desc: "Abre B apps en los primeros segundos", vid: "Ia6FGKCflOI", diff: "easy", tip: "Tirá a través de la pared del pasillo de apps. Simple left click throw desde la entrada." },
+    ],
+    molotov: [
+      { title: "Molotov B Site (van)", desc: "Saca a cualquiera escondido detrás de la van", vid: "LGJpbVEQI0Y", diff: "easy", tip: "Apuntá a la esquina superior de la van desde afuera de B apps. Simple left click." },
+      { title: "Molotov A Escaleras", desc: "Fuerza al CT a salir de stairs", vid: "QpBkBs7HPQE", diff: "medium", tip: "Tiralo desde T ramp apuntando al techo de stairs para que caiga en el ángulo exacto." },
+      { title: "Molotov CT Box A", desc: "Saca al CT del box en A site", vid: "XxuHVzfj3xg", diff: "medium", tip: "Desde el inicio de ramp, apuntá al borde del techo del CT box. Left click." },
+    ],
+    he: [
+      { title: "HE B Apps (daño early)", desc: "Daña a los CT que van a stackear B", vid: "oJmO2VLW6Aw", diff: "easy", tip: "Tiralo al principio de la ronda. Si caen CTs en B apps hace mucho daño gratis." },
+      { title: "HE Short Mid", desc: "Daña jugadores en Short al inicio", vid: "oJmO2VLW6Aw", diff: "medium", tip: "Tirá desde T spawn hacia Short. Si hay algún CT crosseando early hace daño fácil." },
+    ],
+  },
+  nuke: {
+    smoke: [
+      { title: "Humo Heaven / Lobby", desc: "Bloquea a los CTs de Heaven para subir", vid: "wqw9bxfNJcQ", diff: "hard", tip: "Es una de las granadas más difíciles de Nuke. Practicala muchas veces en servidor de práctica." },
+      { title: "Humo Ramp", desc: "Cubre el ramp para subir al Upper", vid: "zNLyMBxJH_E", diff: "medium", tip: "Posicionarte bien contra la pared exterior. El humo tiene que cubrir el ángulo del ramp completo." },
+      { title: "Humo Toxic (exterior)", desc: "Permite cruzar el patio exterior", vid: "9TvTI4Bn9Nc", diff: "easy", tip: "Desde el inicio de T spawn exterior, simple left click throw hacia el contenedor." },
+      { title: "Humo Secret / Door", desc: "Cubre la entrada por Secret al Lower", vid: "8DjpCFMPKEI", diff: "medium", tip: "Tiralo desde afuera. El humo tiene que tapar el ángulo de door completamente." },
+    ],
+    flash: [
+      { title: "Flash perfecta Nuke Upper", desc: "Ciega a los CTs al entrar por ramp", vid: "YNSqS5mtoOM", diff: "hard", tip: "Tirá contra el techo de la entrada de Upper. Perfecta para hacer el push coordinado." },
+      { title: "Flash Heaven desde Outside", desc: "Ciega a los jugadores en Heaven", vid: "ahKpQaHxfz8", diff: "medium", tip: "Lanzá alto contra la pared exterior para que reviente arriba de Heaven." },
+    ],
+    molotov: [
+      { title: "Molotov Upper A (rafters)", desc: "Saca a los CTs de rafters en Upper", vid: "LGJpbVEQI0Y", diff: "medium", tip: "Apuntá al borde del techo de rafters. El molotov tiene que caer exactamente arriba." },
+      { title: "Molotov Lower B (silo)", desc: "Saca al defensor del silo en Lower", vid: "QpBkBs7HPQE", diff: "easy", tip: "Tiralo desde la entrada de Lower hacia el silo. Simple left click." },
+      { title: "Molotov Squeaky Door", desc: "Fuerza al CT a salir de squeaky", vid: "XxuHVzfj3xg", diff: "easy", tip: "Desde el inicio de Lower, apuntá a la esquina de squeaky door." },
+    ],
+    he: [
+      { title: "HE Ramp early", desc: "Daña a los CTs que corren a ramp", vid: "oJmO2VLW6Aw", diff: "medium", tip: "Tiralo al inicio de la ronda hacia ramp. Si hay alguien subiendo hace buen daño." },
+    ],
+  },
+  inferno: {
+    smoke: [
+      { title: "Banana (control CT)", desc: "Humo esencial para tomar Banana", vid: "cbEAP8l3fzU", diff: "easy", tip: "Desde T spawn apuntá a la parte superior izquierda de la pared al inicio de Banana. Left click throw." },
+      { title: "Coffins A Site", desc: "Saca al CT de Coffins para ejecutar A", vid: "jMiKQMCfEhk", diff: "medium", tip: "Coordinar con el humo de Arch. Posicionarte en la esquina de la calleja antes de A." },
+      { title: "Arch / CT A", desc: "Cubre la rotación de CTs hacia A", vid: "Q5ATPQpIVTI", diff: "hard", tip: "Es una de las más difíciles de Inferno. Requiere posición exacta y jump throw." },
+      { title: "Balcony Banana", desc: "Cierra el ángulo del balcón en Banana", vid: "wLxOlQqcaXc", diff: "easy", tip: "Apuntá al borde del balcón. Left click desde el inicio de T spawn." },
+      { title: "CT Stairs A", desc: "Corta la escalera CT en A site", vid: "S3EaKgXmMeM", diff: "medium", tip: "Pararse contra la pared de la calleja hacia A, apuntar a la esquina del edificio más alto." },
+    ],
+    flash: [
+      { title: "Flash Banana perfect", desc: "Ciega a los CTs de Banana sin cegarte", vid: "YNSqS5mtoOM", diff: "hard", tip: "Tirala contra la pared del pasillo de Banana para que reviente en la curva. Avisá al equipo." },
+      { title: "Pop Flash A Site", desc: "Flash al entrar por Arch hacia A", vid: "ahKpQaHxfz8", diff: "medium", tip: "Tirala alta contra la pared de Arch para que reviente sobre el site." },
+      { title: "Flash B Apps", desc: "Abre el ángulo al entrar por B", vid: "Ia6FGKCflOI", diff: "easy", tip: "Simple left click hacia el techo al entrar por el pasillo de B." },
+    ],
+    molotov: [
+      { title: "Molotov Coffins A", desc: "Saca al CT escondido detrás de Coffins", vid: "LGJpbVEQI0Y", diff: "easy", tip: "Apuntá a la esquina superior de Coffins. Left click throw." },
+      { title: "Molotov Banana (coche)", desc: "Controla el coche en Banana", vid: "QpBkBs7HPQE", diff: "easy", tip: "Tiralo desde el inicio de Banana apuntando al coche. El fuego tapa el ángulo principal." },
+      { title: "Molotov Bike A", desc: "Saca al CT detrás de la moto en A", vid: "XxuHVzfj3xg", diff: "medium", tip: "Desde afuera de A, tiralo contra la pared para que caiga exactamente sobre la moto." },
+    ],
+    he: [
+      { title: "HE Banana early", desc: "Daña a los CTs que van a holdear Banana", vid: "oJmO2VLW6Aw", diff: "medium", tip: "Tiralo al inicio de la ronda por encima de la pared. Si caen CTs en banana hace mucho daño." },
+    ],
+  },
+  dust2: {
+    smoke: [
+      { title: "Cross (B a A)", desc: "Humo para cruzar de B hacia A site", vid: "NI-bsOgkPFI", diff: "easy", tip: "Desde T spawn, apuntá a la esquina del edificio más cercano. Left click throw simple." },
+      { title: "CT Spawn Long A", desc: "Corta la rotación por Long hacia A", vid: "S3EaKgXmMeM", diff: "medium", tip: "Posicionarte al inicio de Long, apuntá al borde del edificio CT. Jump throw." },
+      { title: "Xbox Mid", desc: "Humo para cruzar Mid sin ser visto", vid: "wLxOlQqcaXc", diff: "easy", tip: "Desde T spawn, apuntá al punto exacto de Xbox. Simple left click sin jump." },
+      { title: "Short Stairs A", desc: "Cubre las escaleras de Short hacia A", vid: "Q5ATPQpIVTI", diff: "medium", tip: "Desde el inicio de Short, apuntá al borde del techo de stairs. Jump throw." },
+      { title: "Goose A Site", desc: "Tapa el ángulo de Goose en A site", vid: "jMiKQMCfEhk", diff: "hard", tip: "Difícil de ejecutar. Practicala desde el portal de Long hacia A hasta memorizarla." },
+      { title: "B Doors (1 humo)", desc: "Humo único que tapa B doors completo", vid: "yCqCXWfmWMM", diff: "easy", tip: "Desde afuera de B, apuntá al borde superior de las puertas. Left click throw." },
+    ],
+    flash: [
+      { title: "Flash Long A perfecta", desc: "Ciega al AWPer de Long sin cegarte", vid: "YNSqS5mtoOM", diff: "hard", tip: "Tirala desde la esquina de Long hacia la pared para que reviente sobre el ángulo largo." },
+      { title: "Pop Flash B Site", desc: "Flash al entrar por B tunnels al site", vid: "ahKpQaHxfz8", diff: "medium", tip: "Tirala contra el techo de B tunnels. Perfecta coordinada con el equipo." },
+      { title: "Flash Xbox Mid", desc: "Ciega a los CTs en Mid", vid: "Ia6FGKCflOI", diff: "easy", tip: "Tirala alta desde T spawn hacia Mid. Fácil de ejecutar, muy efectiva early ronda." },
+    ],
+    molotov: [
+      { title: "Molotov B Site (barrels)", desc: "Saca al CT escondido detrás de barrels", vid: "LGJpbVEQI0Y", diff: "easy", tip: "Apuntá a la esquina de los barrels al entrar por B. Simple left click." },
+      { title: "Molotov CT Long A", desc: "Fuerza al CT a salir de la esquina Long", vid: "QpBkBs7HPQE", diff: "medium", tip: "Desde la esquina de Long, apuntá al borde del edificio CT. Jump throw." },
+      { title: "Molotov Short A (plat)", desc: "Saca al CT de la plataforma en Short", vid: "XxuHVzfj3xg", diff: "medium", tip: "Al entrar por Short, apuntá a la plataforma elevada. Left click throw." },
+    ],
+    he: [
+      { title: "HE B Tunnels early", desc: "Daña a los CTs que corren a B", vid: "oJmO2VLW6Aw", diff: "easy", tip: "Tiralo por encima de B desde T spawn al inicio de la ronda. Buena probabilidad de daño." },
+      { title: "HE Long A (early push)", desc: "Daña rush temprano de Long", vid: "oJmO2VLW6Aw", diff: "medium", tip: "Tiralo hacia Long al inicio de ronda. Si el equipo rival hace rush Long hace mucho daño." },
+    ],
+  }
+};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentMap = null, currentType = null;
+const history = [];
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.getElementById('back-btn').style.display = history.length > 0 ? 'block' : 'none';
+}
+
+function goBack() {
+  if (history.length === 0) return;
+  const prev = history.pop();
+  if (prev === 'maps') { currentMap = null; showScreen('maps'); }
+  else if (prev === 'types') { showScreen('types'); }
+  else if (prev === 'list') { showScreen('list'); }
+  document.getElementById('back-btn').style.display = history.length > 0 ? 'block' : 'none';
+  // Stop video
+  document.getElementById('yt-player').src = '';
+}
+
+function selectMap(map) {
+  history.push('maps');
+  currentMap = map;
+  const mapNames = { mirage: 'MIRAGE', nuke: 'NUKE', inferno: 'INFERNO', dust2: 'DUST 2' };
+  document.getElementById('types-label').textContent = mapNames[map] + ' — Tipo de granada';
+  const types = ['smoke','flash','molotov','he'];
+  types.forEach(t => {
+    const count = DATA[map][t] ? DATA[map][t].length : 0;
+    document.getElementById('count-' + t).textContent = count + ' lineups';
+  });
+  showScreen('types');
+}
+
+function selectType(type) {
+  history.push('types');
+  currentType = type;
+  const mapNames = { mirage: 'Mirage', nuke: 'Nuke', inferno: 'Inferno', dust2: 'Dust 2' };
+  const typeNames = { smoke: '💨 Humos', flash: '⚡ Flashes', molotov: '🔥 Molotovs', he: '💣 HEs' };
+  document.getElementById('breadcrumb-list').innerHTML = `${mapNames[currentMap]} <span>›</span> <span>${typeNames[type]}</span>`;
+  const nades = DATA[currentMap][type] || [];
+  const list = document.getElementById('nade-list');
+  list.innerHTML = nades.map((n, i) => `
+    <div class="nade-item" onclick="openNade(${i})">
+      <div class="nade-dot ${type}"></div>
+      <div class="nade-info">
+        <div class="nade-title">${n.title}</div>
+        <div class="nade-desc">${n.desc}</div>
+        <span class="difficulty diff-${n.diff}">${n.diff === 'easy' ? '● Fácil' : n.diff === 'medium' ? '● Medio' : '● Difícil'}</span>
+      </div>
+      <div class="nade-arrow">›</div>
+    </div>`).join('');
+  showScreen('list');
+}
+
+function openNade(i) {
+  history.push('list');
+  const nade = DATA[currentMap][currentType][i];
+  const mapNames = { mirage: 'Mirage', nuke: 'Nuke', inferno: 'Inferno', dust2: 'Dust 2' };
+  const typeNames = { smoke: 'Humo', flash: 'Flash', molotov: 'Molotov', he: 'HE' };
+  document.getElementById('vid-title').textContent = nade.title;
+  document.getElementById('vid-tags').innerHTML = `
+    <span class="tag tag-map">${mapNames[currentMap]}</span>
+    <span class="tag tag-type ${currentType}">${typeNames[currentType]}</span>
+    <span class="difficulty diff-${nade.diff}">${nade.diff === 'easy' ? '● Fácil' : nade.diff === 'medium' ? '● Medio' : '● Difícil'}</span>`;
+  document.getElementById('vid-tip').textContent = nade.tip;
+  document.getElementById('yt-player').src = `https://www.youtube.com/embed/${nade.vid}?autoplay=1&rel=0`;
+  showScreen('video');
+}
+</script>
+</body>
+</html>
