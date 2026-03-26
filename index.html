@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CS2UTIL">
+<meta name="theme-color" content="#f5a623">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>CS2 UTIL</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --panel: #111116;
+    --card: #18181f;
+    --border: #25252f;
+    --accent: #f5a623;
+    --smoke: #7eb8d4;
+    --flash: #f5e642;
+    --molotov: #e84040;
+    --he: #4de88a;
+    --text: #e8e8f0;
+    --muted: #666680;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100%; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* HEADER */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    padding-top: max(14px, env(safe-area-inset-top));
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .logo { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: 3px; color: var(--accent); }
+  .logo span { color: var(--text); }
+  .back-btn { display: none; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer; letter-spacing: 1px; }
+  .back-btn.visible { display: flex; }
+  .breadcrumb-header { font-size: 12px; color: var(--muted); font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; }
+  .breadcrumb-header span { color: var(--accent); }
+
+  /* SCREENS */
+  .screen { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .screen.active { display: block; }
+
+  /* ── MAP SELECT ── */
+  #screen-maps { padding: 16px; }
+  .section-label { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+  .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .map-card { border-radius: 14px; overflow: hidden; cursor: pointer; position: relative; aspect-ratio: 16/9; display: flex; align-items: flex-end; border: 1px solid var(--border); transition: transform 0.12s; }
+  .map-card:active { transform: scale(0.96); }
+  .map-emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 52px; opacity: 0.18; }
+  .map-label { position: relative; z-index: 1; width: 100%; padding: 10px 12px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); }
+  .map-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+  .map-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-top: 1px; }
+
+  /* ── TYPE SELECT ── */
+  #screen-types { padding: 16px; }
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-card { background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 22px 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.12s, border-color 0.12s; }
+  .type-card:active { transform: scale(0.96); }
+  .type-icon { font-size: 34px; }
+  .type-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: 1px; }
+  .type-count { font-size: 11px; color: var(--muted); }
+  .type-card.smoke { border-color: var(--smoke); } .type-card.smoke .type-name { color: var(--smoke); }
+  .type-card.flash { border-color: var(--flash); } .type-card.flash .type-name { color: var(--flash); }
+  .type-card.molotov { border-color: var(--molotov); } .type-card.molotov .type-name { color: var(--molotov); }
+  .type-card.he { border-color: var(--he); } .type-card.he .type-name { color: var(--he); }
+
+  /* ── NADE LIST ── */
+  #screen-list { padding: 12px 16px; }
+  .nade-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; transition: transform 0.12s, border-color 0.12s; }
+  .nade-item:active { transform: scale(0.98); border-color: var(--accent); }
+  .nade-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .nade-dot.smoke { background: var(--smoke); }
+  .nade-dot.flash { background: var(--flash); }
+  .nade-dot.molotov { background: var(--molotov); }
+  .nade-dot.he { background: var(--he); }
+  .nade-info { flex: 1; min-width: 0; }
+  .nade-title { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.5px; }
+  .nade-desc { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .diff { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 500; margin-top: 5px; }
+  .diff-easy { background: #0d3320; color: var(--he); }
+  .diff-medium { background: #332d00; color: var(--flash); }
+  .diff-hard { background: #330d0d; color: var(--molotov); }
+  .nade-arrow { color: var(--muted); font-size: 20px; flex-shrink: 0; }
+
+  /* ── VIDEO ── */
+  #screen-video { padding-bottom: 30px; }
+  .video-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+  .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+  .video-info { padding: 16px; }
+  .vid-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .vid-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+  .tag-map { background: #1a1a2e; color: #8888ff; }
+  .tag-type { font-family: 'Rajdhani', sans-serif; font-weight: 600; }
+  .tag-type.smoke { background: #0d1f2e; color: var(--smoke); }
+  .tag-type.flash { background: #2e2a00; color: var(--flash); }
+  .tag-type.molotov { background: #2e0d0d; color: var(--molotov); }
+  .tag-type.he { background: #0d2e1a; color: var(--he); }
+  .tip-box { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 14px 16px; font-size: 13px; color: #aaa; line-height: 1.65; margin-bottom: 14px; }
+  .tip-box strong { color: var(--accent); display: block; margin-bottom: 5px; font-family: 'Rajdhani', sans-serif; font-size: 13px; letter-spacing: 1px; }
+  .yt-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #ff0000; color: #fff; border: none; border-radius: 10px; padding: 13px; width: 100%; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 1px; cursor: pointer; text-decoration: none; }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+  .screen.active { animation: slideIn 0.18s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" id="header-logo">CS2<span>UTIL</span></div>
+  <div class="breadcrumb-header" id="header-bread" style="display:none"></div>
+  <button class="back-btn" id="back-btn" onclick="goBack()">← VOLVER</button>
+</header>
+
+<!-- S1: MAPAS -->
+<div class="screen active" id="screen-maps">
+  <div style="padding:16px">
+    <div class="section-label">Seleccioná el mapa</div>
+    <div class="map-grid">
+      <div class="map-card" onclick="selectMap('mirage')" style="background:linear-gradient(135deg,#1a1208,#2e2008)">
+        <div class="map-emoji">🏛️</div>
+        <div class="map-label"><div class="map-name">MIRAGE</div><div class="map-sub">MID · A SITE · B SITE</div></div>
+      </div>
+      <div class="map-card" onclick="selectMap('nuke')" style="background:linear-gradient(135deg,#080f1a,#0a1f14)">
+        <div class="map-emoji">☢️</div>
+        <div class="map-label"><div class="map-name">NUKE</div><div class="map-sub">UPPER · LOWER · OUTSIDE</div></div>
+      </div>
+      <div class="map-card" onclick="selectMap('inferno')" style="background:linear-gradient(135deg,#1a0808,#2a1008)">
+        <div class="map-emoji">🔥</div>
+        <div class="map-label"><div class="map-name">INFERNO</div><div class="map-sub">BANANA · A SITE · MID</div></div>
+      </div>
+      <div class="map-card" onclick="selectMap('dust2')" style="background:linear-gradient(135deg,#1a1508,#2a200a)">
+        <div class="map-emoji">🏜️</div>
+        <div class="map-label"><div class="map-name">DUST 2</div><div class="map-sub">LONG · MID · B SITE</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: TIPO -->
+<div class="screen" id="screen-types">
+  <div style="padding:16px">
+    <div class="section-label" id="types-label">Tipo de granada</div>
+    <div class="type-grid">
+      <div class="type-card smoke" onclick="selectType('smoke')"><div class="type-icon">💨</div><div class="type-name">HUMO</div><div class="type-count" id="cnt-smoke"></div></div>
+      <div class="type-card flash" onclick="selectType('flash')"><div class="type-icon">⚡</div><div class="type-name">FLASH</div><div class="type-count" id="cnt-flash"></div></div>
+      <div class="type-card molotov" onclick="selectType('molotov')"><div class="type-icon">🔥</div><div class="type-name">MOLOTOV</div><div class="type-count" id="cnt-molotov"></div></div>
+      <div class="type-card he" onclick="selectType('he')"><div class="type-icon">💣</div><div class="type-name">HE</div><div class="type-count" id="cnt-he"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- S3: LISTA -->
+<div class="screen" id="screen-list">
+  <div id="nade-list" style="padding:12px 16px"></div>
+</div>
+
+<!-- S4: VIDEO -->
+<div class="screen" id="screen-video">
+  <div class="video-wrap">
+    <iframe id="yt-frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+  </div>
+  <div class="video-info">
+    <div class="vid-title" id="vid-title"></div>
+    <div class="vid-tags" id="vid-tags"></div>
+    <div class="tip-box"><strong>💡 CÓMO EJECUTAR</strong><span id="vid-tip"></span></div>
+    <a id="yt-link" href="#" target="_blank" class="yt-btn">▶ Abrir en YouTube</a>
+  </div>
+</div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────
+const DATA = {
+  mirage: {
+    smoke: [
+      { title:"Ventana Mid (Window)", desc:"Bloquea al AWPer de Mid", vid:"NI-bsOgkPFI", diff:"medium", tip:"Parate al lado del tacho en T spawn, apuntá al marco derecho de la ventana, mantené D y hacé jump throw." },
+      { title:"Escaleras A (Stairs)", desc:"Esencial para ejecutar A site", vid:"S3EaKgXmMeM", diff:"easy", tip:"Subí a los pilares cerca de T base, apuntá al punto oscuro entre los ladrillos, ejecutá left-right click jump throw." },
+      { title:"CT Spawn A", desc:"Saca al CT del ticket y el box", vid:"Q5ATPQpIVTI", diff:"hard", tip:"Posicionarte entre T spawn y los pilares, apuntá al extremo de la viga del edificio más alto, jump throw." },
+      { title:"Jungle A", desc:"Combo con Stairs para ejecutar A", vid:"jMiKQMCfEhk", diff:"medium", tip:"Subí al andamio camino a A site, caminá hasta el final de la plataforma, mirá a la izquierda para posicionarte." },
+      { title:"Market Window B", desc:"Bloquea rotaciones CT en B", vid:"yCqCXWfmWMM", diff:"easy", tip:"Metete en la esquina derecha al salir de TV room, apuntá a la torre, jump throw." },
+      { title:"Top Mid", desc:"Humo básico esencial de Top Mid", vid:"wLxOlQqcaXc", diff:"easy", tip:"Subite al tacho en T spawn, apuntá a la punta derecha de la antena, left click throw sin saltar." },
+    ],
+    flash: [
+      { title:"Flash Window Mid", desc:"Ciega al AWPer de Window", vid:"YNSqS5mtoOM", diff:"medium", tip:"Tirala contra la pared de mid para que reviente justo sobre la ventana. Avisá 'flash window'." },
+      { title:"Pop Flash A Site", desc:"Flash perfecta al entrar por Ramp", vid:"ahKpQaHxfz8", diff:"hard", tip:"Tirá la flash contra la pared de la esquina de Ramp para que reviente sobre el site sin cegarte." },
+      { title:"Flash B Apps", desc:"Abre B apps en los primeros segundos", vid:"Ia6FGKCflOI", diff:"easy", tip:"Tirá a través de la pared del pasillo de apps. Simple left click throw." },
+    ],
+    molotov: [
+      { title:"Molotov B Site (van)", desc:"Saca a cualquiera detrás de la van", vid:"LGJpbVEQI0Y", diff:"easy", tip:"Apuntá a la esquina superior de la van desde B apps. Simple left click." },
+      { title:"Molotov A Escaleras", desc:"Fuerza al CT a salir de stairs", vid:"QpBkBs7HPQE", diff:"medium", tip:"Tiralo desde T ramp apuntando al techo de stairs para que caiga en el ángulo exacto." },
+      { title:"Molotov CT Box A", desc:"Saca al CT del box en A site", vid:"XxuHVzfj3xg", diff:"medium", tip:"Desde el inicio de ramp, apuntá al borde del techo del CT box. Left click." },
+    ],
+    he: [
+      { title:"HE B Apps (daño early)", desc:"Daña a los CTs que stackean B", vid:"oJmO2VLW6Aw", diff:"easy", tip:"Tiralo al principio de la ronda. Si caen CTs en B apps hace mucho daño gratis." },
+      { title:"HE Short Mid", desc:"Daña jugadores en Short al inicio", vid:"oJmO2VLW6Aw", diff:"medium", tip:"Tirá desde T spawn hacia Short. Si hay algún CT crosseando early hace daño fácil." },
+    ],
+  },
+  nuke: {
+    smoke: [
+      { title:"Humo Heaven / Lobby", desc:"Bloquea a los CTs de Heaven", vid:"wqw9bxfNJcQ", diff:"hard", tip:"Una de las más difíciles de Nuke. Practicala muchas veces en servidor de práctica antes de usarla en ranked." },
+      { title:"Humo Ramp (Upper)", desc:"Cubre el ramp para entrar Upper", vid:"zNLyMBxJH_E", diff:"medium", tip:"Posicionarte contra la pared exterior. El humo tiene que cubrir el ángulo completo del ramp." },
+      { title:"Humo Toxic (exterior)", desc:"Permite cruzar el patio exterior", vid:"9TvTI4Bn9Nc", diff:"easy", tip:"Desde T spawn exterior, simple left click throw hacia el contenedor. Muy fácil de ejecutar." },
+      { title:"Humo Secret / Door", desc:"Cubre la entrada al Lower", vid:"8DjpCFMPKEI", diff:"medium", tip:"Tiralo desde afuera. El humo tiene que tapar el ángulo de door completamente para que sea útil." },
+    ],
+    flash: [
+      { title:"Flash Nuke Upper", desc:"Ciega a los CTs al entrar por ramp", vid:"YNSqS5mtoOM", diff:"hard", tip:"Tirá contra el techo de la entrada de Upper. Perfecta coordinada con el equipo." },
+      { title:"Flash Heaven desde Outside", desc:"Ciega jugadores en Heaven", vid:"ahKpQaHxfz8", diff:"medium", tip:"Lanzá alto contra la pared exterior para que reviente arriba de Heaven." },
+    ],
+    molotov: [
+      { title:"Molotov Rafters (Upper)", desc:"Saca a los CTs de rafters", vid:"LGJpbVEQI0Y", diff:"medium", tip:"Apuntá al borde del techo de rafters. El molotov tiene que caer exactamente arriba." },
+      { title:"Molotov Silo (Lower)", desc:"Saca al defensor del silo", vid:"QpBkBs7HPQE", diff:"easy", tip:"Tiralo desde la entrada de Lower hacia el silo. Simple left click." },
+      { title:"Molotov Squeaky Door", desc:"Fuerza al CT a salir de squeaky", vid:"XxuHVzfj3xg", diff:"easy", tip:"Desde el inicio de Lower, apuntá a la esquina de squeaky door." },
+    ],
+    he: [
+      { title:"HE Ramp early", desc:"Daña a los CTs que van a ramp", vid:"oJmO2VLW6Aw", diff:"medium", tip:"Tiralo al inicio de la ronda hacia ramp. Si hay alguien subiendo hace buen daño gratis." },
+    ],
+  },
+  inferno: {
+    smoke: [
+      { title:"Banana CT", desc:"Humo esencial para tomar Banana", vid:"cbEAP8l3fzU", diff:"easy", tip:"Desde T spawn apuntá a la parte superior izquierda de la pared al inicio de Banana. Left click throw." },
+      { title:"Coffins A Site", desc:"Saca al CT de Coffins para ejecutar", vid:"jMiKQMCfEhk", diff:"medium", tip:"Coordinar con el humo de Arch. Posicionarte en la esquina de la calleja antes de A." },
+      { title:"Arch / CT A", desc:"Cubre rotación de CTs hacia A", vid:"Q5ATPQpIVTI", diff:"hard", tip:"Una de las más difíciles de Inferno. Requiere posición exacta y jump throw bien ejecutado." },
+      { title:"Balcony Banana", desc:"Cierra el ángulo del balcón", vid:"wLxOlQqcaXc", diff:"easy", tip:"Apuntá al borde del balcón. Left click desde el inicio de T spawn. Básica de conocer." },
+      { title:"CT Stairs A", desc:"Corta la escalera CT en A site", vid:"S3EaKgXmMeM", diff:"medium", tip:"Pararse contra la pared de la calleja hacia A, apuntar a la esquina del edificio más alto." },
+    ],
+    flash: [
+      { title:"Flash Banana perfecta", desc:"Ciega CTs de Banana sin cegarte", vid:"YNSqS5mtoOM", diff:"hard", tip:"Tirala contra la pared del pasillo para que reviente en la curva. Avisá al equipo antes." },
+      { title:"Pop Flash A Site", desc:"Flash al entrar por Arch hacia A", vid:"ahKpQaHxfz8", diff:"medium", tip:"Tirala alta contra la pared de Arch para que reviente sobre el site." },
+      { title:"Flash B pasillo", desc:"Abre el ángulo al entrar por B", vid:"Ia6FGKCflOI", diff:"easy", tip:"Simple left click hacia el techo al entrar por el pasillo de B." },
+    ],
+    molotov: [
+      { title:"Molotov Coffins A", desc:"Saca al CT detrás de Coffins", vid:"LGJpbVEQI0Y", diff:"easy", tip:"Apuntá a la esquina superior de Coffins desde afuera de A. Left click throw." },
+      { title:"Molotov Banana (coche)", desc:"Controla el coche en Banana", vid:"QpBkBs7HPQE", diff:"easy", tip:"Tiralo desde el inicio de Banana apuntando al coche. El fuego tapa el ángulo principal." },
+      { title:"Molotov Bike A", desc:"Saca al CT detrás de la moto", vid:"XxuHVzfj3xg", diff:"medium", tip:"Desde afuera de A, tiralo contra la pared para que caiga exactamente sobre la moto." },
+    ],
+    he: [
+      { title:"HE Banana early", desc:"Daña a los CTs que van a Banana", vid:"oJmO2VLW6Aw", diff:"medium", tip:"Tiralo al inicio de la ronda por encima de la pared. Si caen CTs en banana hace mucho daño." },
+    ],
+  },
+  dust2: {
+    smoke: [
+      { title:"Cross B→A", desc:"Cruzar de B tunnels hacia A", vid:"NI-bsOgkPFI", diff:"easy", tip:"Desde T spawn, apuntá a la esquina del edificio más cercano. Left click throw, sin saltar." },
+      { title:"CT Spawn Long A", desc:"Corta rotación CT por Long", vid:"S3EaKgXmMeM", diff:"medium", tip:"Al inicio de Long, apuntá al borde del edificio CT. Jump throw." },
+      { title:"Xbox Mid", desc:"Cruzar Mid sin ser visto", vid:"wLxOlQqcaXc", diff:"easy", tip:"Desde T spawn, apuntá al punto exacto de Xbox. Simple left click sin saltar." },
+      { title:"Short Stairs A", desc:"Cubre las escaleras de Short", vid:"Q5ATPQpIVTI", diff:"medium", tip:"Desde el inicio de Short, apuntá al borde del techo de stairs. Jump throw." },
+      { title:"Goose A Site", desc:"Tapa el ángulo de Goose", vid:"jMiKQMCfEhk", diff:"hard", tip:"Difícil de ejecutar. Practicala desde el portal de Long hacia A hasta memorizarla." },
+      { title:"B Doors (1 humo)", desc:"Tapa B doors completo con 1 sola", vid:"yCqCXWfmWMM", diff:"easy", tip:"Desde afuera de B, apuntá al borde superior de las puertas. Left click throw." },
+    ],
+    flash: [
+      { title:"Flash Long A", desc:"Ciega al AWPer de Long", vid:"YNSqS5mtoOM", diff:"hard", tip:"Tirala desde la esquina de Long hacia la pared para que reviente sobre el ángulo largo." },
+      { title:"Pop Flash B Site", desc:"Flash al entrar por B tunnels", vid:"ahKpQaHxfz8", diff:"medium", tip:"Tirala contra el techo de B tunnels. Perfecta coordinada con el equipo." },
+      { title:"Flash Xbox Mid", desc:"Ciega a los CTs en Mid", vid:"Ia6FGKCflOI", diff:"easy", tip:"Tirala alta desde T spawn hacia Mid. Fácil de ejecutar, muy efectiva en early ronda." },
+    ],
+    molotov: [
+      { title:"Molotov B Site (barrels)", desc:"Saca al CT de barrels", vid:"LGJpbVEQI0Y", diff:"easy", tip:"Apuntá a la esquina de los barrels al entrar por B. Simple left click." },
+      { title:"Molotov CT Long A", desc:"Fuerza al CT a salir de Long", vid:"QpBkBs7HPQE", diff:"medium", tip:"Desde la esquina de Long, apuntá al borde del edificio CT. Jump throw." },
+      { title:"Molotov Short A (plat)", desc:"Saca al CT de la plataforma", vid:"XxuHVzfj3xg", diff:"medium", tip:"Al entrar por Short, apuntá a la plataforma elevada. Left click throw." },
+    ],
+    he: [
+      { title:"HE B Tunnels early", desc:"Daña a los CTs que van a B", vid:"oJmO2VLW6Aw", diff:"easy", tip:"Tiralo por encima de B desde T spawn al inicio de la ronda. Buena probabilidad de daño." },
+      { title:"HE Long A early", desc:"Daña rush temprano de Long", vid:"oJmO2VLW6Aw", diff:"medium", tip:"Tiralo hacia Long al inicio de ronda. Si el rival hace rush Long hace mucho daño." },
+    ],
+  }
+};
+
+const MAP_NAMES = { mirage:'Mirage', nuke:'Nuke', inferno:'Inferno', dust2:'Dust 2' };
+const TYPE_NAMES = { smoke:'💨 Humo', flash:'⚡ Flash', molotov:'🔥 Molotov', he:'💣 HE' };
+const DIFF_LABEL = { easy:'● Fácil', medium:'● Medio', hard:'● Difícil' };
+
+let currentMap = null, currentType = null, currentNade = null;
+const stack = [];
+
+function setHeader(showBack, bread='') {
+  const btn = document.getElementById('back-btn');
+  const logo = document.getElementById('header-logo');
+  const bc = document.getElementById('header-bread');
+  btn.classList.toggle('visible', showBack);
+  if (bread) { logo.style.display='none'; bc.style.display='block'; bc.innerHTML = bread; }
+  else { logo.style.display='block'; bc.style.display='none'; }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.getElementById('screen-' + id).scrollTop = 0;
+}
+
+function goBack() {
+  const prev = stack.pop();
+  if (!prev) return;
+  if (prev === 'maps') { setHeader(false); showScreen('maps'); }
+  else if (prev === 'types') { setHeader(true, MAP_NAMES[currentMap]); showScreen('types'); }
+  else if (prev === 'list') { setHeader(true, `${MAP_NAMES[currentMap]} <span>› ${TYPE_NAMES[currentType]}</span>`); showScreen('list'); }
+  // stop video
+  if (prev !== 'list') document.getElementById('yt-frame').src = '';
+}
+
+function selectMap(map) {
+  stack.push('maps');
+  currentMap = map;
+  const mapData = DATA[map];
+  document.getElementById('types-label').textContent = MAP_NAMES[map].toUpperCase() + ' — Tipo de granada';
+  ['smoke','flash','molotov','he'].forEach(t => {
+    document.getElementById('cnt-' + t).textContent = (mapData[t]?.length || 0) + ' lineups';
+  });
+  setHeader(true, MAP_NAMES[map]);
+  showScreen('types');
+}
+
+function selectType(type) {
+  stack.push('types');
+  currentType = type;
+  const nades = DATA[currentMap][type] || [];
+  document.getElementById('nade-list').innerHTML = nades.map((n, i) => `
+    <div class="nade-item" onclick="openNade(${i})">
+      <div class="nade-dot ${type}"></div>
+      <div class="nade-info">
+        <div class="nade-title">${n.title}</div>
+        <div class="nade-desc">${n.desc}</div>
+        <span class="diff diff-${n.diff}">${DIFF_LABEL[n.diff]}</span>
+      </div>
+      <div class="nade-arrow">›</div>
+    </div>`).join('');
+  setHeader(true, `${MAP_NAMES[currentMap]} <span>› ${TYPE_NAMES[type]}</span>`);
+  showScreen('list');
+}
+
+function openNade(i) {
+  stack.push('list');
+  currentNade = i;
+  const n = DATA[currentMap][currentType][i];
+  document.getElementById('vid-title').textContent = n.title;
+  document.getElementById('vid-tags').innerHTML = `
+    <span class="tag tag-map">${MAP_NAMES[currentMap]}</span>
+    <span class="tag tag-type ${currentType}">${TYPE_NAMES[currentType]}</span>
+    <span class="diff diff-${n.diff}">${DIFF_LABEL[n.diff]}</span>`;
+  document.getElementById('vid-tip').textContent = n.tip;
+  document.getElementById('yt-frame').src = `https://www.youtube.com/embed/${n.vid}?autoplay=1&rel=0&playsinline=1`;
+  document.getElementById('yt-link').href = `https://www.youtube.com/watch?v=${n.vid}`;
+  setHeader(true, `${MAP_NAMES[currentMap]} <span>› ${n.title}</span>`);
+  showScreen('video');
+}
+
+// PWA service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
